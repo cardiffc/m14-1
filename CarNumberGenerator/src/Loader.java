@@ -48,10 +48,15 @@ public class Loader
                         for (char secondLetter : letters) {
                             for (char thirdLetter : letters) {
                                 builder.append(firstLetter);
-                                builder.append(padNumber(number, 3));
+                                builder.append((number < 100) ? padNumber(Integer.toString(number),3) : number);
                                 builder.append(secondLetter);
                                 builder.append(thirdLetter);
-                                builder.append(padNumber(regionCode, 2));
+                                StringBuilder reg = new StringBuilder();
+                                if (regionCode < 10) {
+                                    reg.append("0");
+                                }
+                                reg.append(regionCode);
+                                builder.append(reg);
                                 builder.append("\n");
                             }
                         }
@@ -65,15 +70,14 @@ public class Loader
 
 
         });
+
         return thread;
     }
 
-    private static StringBuilder padNumber(int number, int numberLength)
+    private synchronized static StringBuilder padNumber(String numberStr, int numberLength)
     {
-        String numberStr = Integer.toString(number);
         int padSize = numberLength - numberStr.length();
         StringBuilder returningNumber = new StringBuilder();
-
         for(int i = 0; i < padSize; i++) {
             returningNumber.append("0");
         }
