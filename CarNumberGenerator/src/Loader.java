@@ -1,7 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class Loader
 {
@@ -12,12 +12,15 @@ public class Loader
         List<Thread> threads= new ArrayList<>();
         int begin = 1;
         for (int i = 0; i < 4; i++) {
-            threads.add(getThread(begin, begin+25, i));
-            begin += 25;
+            if (begin == 1) {
+                threads.add(getThread(begin, begin + 24, i));
+                begin +=24;
+            } else {
+                threads.add(getThread(begin, begin + 25, i));
+                begin += 25;
+            }
         }
-
         threads.forEach(Thread::start);
-
         threads.forEach(thread -> {
             try {
                 thread.join();
@@ -25,21 +28,39 @@ public class Loader
                 e.printStackTrace();
             }
         });
-
         System.out.println((System.currentTimeMillis() - start) + " ms");
     }
 
     private static Thread getThread (int start, int stop, int filenumber) {
 
         Thread thread = new Thread(() -> {
-
-
             PrintWriter writer = null;
             try {
                 writer = new PrintWriter("res/numbers" + filenumber + ".txt");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+
+            // Создаем массив регионов
+            String[] regioncodes = new String[100];
+            for (int i = 0; i < 100 ; i++) {
+                regioncodes[i] = (i <= 9) ? "0".concat(Integer.toString(i)) : Integer.toString(i);
+            }
+
+            // Создаем массив номеров
+            String[] numbers = new String[1000];
+            for (int i = 0; i < 1000 ; i++) {
+                String num = Integer.toString(i);
+                if (i <= 9) {
+                    numbers[i] = "00".concat(num);
+                } else if (i <= 99) {
+                    numbers[i] = "0".concat(num);
+                } else {
+                    numbers[i] = num;
+                }
+            }
+
+            // Строим билдер, пишем в файл
             StringBuilder builder = new StringBuilder();
             char letters[] = {'У', 'К', 'Е', 'Н', 'Х', 'В', 'А', 'Р', 'О', 'С', 'М', 'Т'};
             for (int regionCode = start; regionCode < stop ; regionCode++) {
@@ -48,15 +69,10 @@ public class Loader
                         for (char secondLetter : letters) {
                             for (char thirdLetter : letters) {
                                 builder.append(firstLetter);
-                                builder.append((number < 100) ? padNumber(Integer.toString(number),3) : number);
+                                builder.append(numbers[number]);
                                 builder.append(secondLetter);
                                 builder.append(thirdLetter);
-                                StringBuilder reg = new StringBuilder();
-                                if (regionCode < 10) {
-                                    reg.append("0");
-                                }
-                                reg.append(regionCode);
-                                builder.append(reg);
+                                builder.append(regioncodes[regionCode]);
                                 builder.append("\n");
                             }
                         }
@@ -67,21 +83,7 @@ public class Loader
             }
             writer.flush();
             writer.close();
-
-
         });
-
         return thread;
-    }
-
-    private synchronized static StringBuilder padNumber(String numberStr, int numberLength)
-    {
-        int padSize = numberLength - numberStr.length();
-        StringBuilder returningNumber = new StringBuilder();
-        for(int i = 0; i < padSize; i++) {
-            returningNumber.append("0");
-        }
-        returningNumber.append(numberStr);
-        return returningNumber;
     }
 }
